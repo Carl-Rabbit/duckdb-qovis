@@ -43,6 +43,8 @@
 #include "duckdb/transaction/meta_transaction.hpp"
 #include "duckdb/transaction/transaction_manager.hpp"
 
+#include "duckdb/recorder/recorder.hpp"
+
 namespace duckdb {
 
 struct ActiveQueryContext {
@@ -351,23 +353,26 @@ ClientContext::CreatePreparedStatementInternal(ClientContextLock &lock, const st
 #ifdef DEBUG
 	plan->Verify(*this);
 #endif
+	Recorder::LogStepStart("Optimization", "phase", *plan);
 	if (config.enable_optimizer && plan->RequireOptimizer()) {
 		profiler.StartPhase(MetricsType::ALL_OPTIMIZERS);
 		Optimizer optimizer(*planner.binder, *this);
 		plan = optimizer.Optimize(std::move(plan));
 		D_ASSERT(plan);
 		profiler.EndPhase();
-
 #ifdef DEBUG
 		plan->Verify(*this);
 #endif
 	}
+	Recorder::LogStepEnd("Optimization", "phase", *plan);
 
+	Recorder::LogStepStart("Planning", "phase", *plan);
 	profiler.StartPhase(MetricsType::PHYSICAL_PLANNER);
 	// now convert logical query plan into a physical query plan
 	PhysicalPlanGenerator physical_planner(*this);
 	auto physical_plan = physical_planner.CreatePlan(std::move(plan));
 	profiler.EndPhase();
+	Recorder::LogStepEnd("Planning", "phase", *physical_plan);
 
 #ifdef DEBUG
 	D_ASSERT(!physical_plan->ToString().empty());
