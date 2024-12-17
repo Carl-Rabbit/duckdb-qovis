@@ -5,7 +5,7 @@ PROJECT_ROOT=$(dirname $(dirname $(dirname $(realpath $0))))
 
 # path to debug executable
 DEBUG_EXECUTABLE=$PROJECT_ROOT/build/debug/duckdb
-DATABASE_FILE_PATH=$PROJECT_ROOT/ssb_1.duckdb
+DATABASE_FILE_PATH=$PROJECT_ROOT/db_files/ssb_1.duckdb
 
 sqls=$(ls /home/youzx/Code/ssb-dbgen/queries/*.sql)
 for sql in ${sqls}
@@ -14,7 +14,7 @@ do
     filename=$(basename ${sql})
     number=${filename%.sql}
     script=${sql}
-    output=$PROJECT_ROOT/qovis/results/ssb/ssb.${number}/ssb.${number}.log
+    output=$PROJECT_ROOT/qovis/results/ssb/ssb.v1.${number}/ssb.v1.${number}.log
     echo "Running ${script} and output to ${output}"
 
     mkdir -p $(dirname ${output})

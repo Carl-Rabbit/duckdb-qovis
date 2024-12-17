@@ -1,0 +1,1 @@
+select col from tbl union select 1 where false order by 1;

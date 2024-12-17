@@ -38,6 +38,7 @@ public:
 	static unique_ptr<LogicalOperator> Deserialize(Deserializer &deserializer);
 
 	idx_t EstimateCardinality(ClientContext &context) override;
+	InsertionOrderPreservingMap<string> ParamsToString() const override;
 
 protected:
 	void ResolveTypes() override {

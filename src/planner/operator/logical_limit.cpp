@@ -28,6 +28,15 @@ idx_t LogicalLimit::EstimateCardinality(ClientContext &context) {
 	return child_cardinality;
 }
 
+InsertionOrderPreservingMap<string> LogicalLimit::ParamsToString() const {
+	auto result = LogicalOperator::ParamsToString();
+	result["Limit"] = to_string(limit_val.GetConstantValue());
+	if (offset_val.Type() == LimitNodeType::CONSTANT_VALUE) {
+		result["Offset"] = to_string(offset_val.GetConstantValue());
+	}
+	return result;
+}
+
 void LogicalLimit::ResolveTypes() {
 	types = children[0]->types;
 }
