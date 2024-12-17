@@ -45,6 +45,7 @@
 #include "duckdb/common/exception/transaction_exception.hpp"
 #include "duckdb/main/client_context_state.hpp"
 
+#include "duckdb/recorder/recorder.hpp"
 namespace duckdb {
 
 struct ActiveQueryContext {
@@ -326,6 +327,7 @@ ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &qu
 #ifdef DEBUG
 	plan->Verify(*this);
 #endif
+	Recorder::LogStepStart("Optimization", "phase", *plan);
 	if (config.enable_optimizer && plan->RequireOptimizer()) {
 		profiler.StartPhase("optimizer");
 		Optimizer optimizer(*planner.binder, *this);
@@ -337,12 +339,15 @@ ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &qu
 		plan->Verify(*this);
 #endif
 	}
+	Recorder::LogStepEnd("Optimization", "phase", *plan);
 
+	Recorder::LogStepStart("Planning", "phase", *plan);
 	profiler.StartPhase("physical_planner");
 	// now convert logical query plan into a physical query plan
 	PhysicalPlanGenerator physical_planner(*this);
 	auto physical_plan = physical_planner.CreatePlan(std::move(plan));
 	profiler.EndPhase();
+	Recorder::LogStepEnd("Planning", "phase", *physical_plan);
 
 #ifdef DEBUG
 	D_ASSERT(!physical_plan->ToString().empty());

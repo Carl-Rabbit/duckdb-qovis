@@ -26,6 +26,8 @@
 #include "duckdb/planner/binder.hpp"
 #include "duckdb/planner/planner.hpp"
 
+#include "duckdb/recorder/recorder.hpp"
+
 namespace duckdb {
 
 Optimizer::Optimizer(Binder &binder, ClientContext &context) : context(context), binder(binder), rewriter(context) {
@@ -65,7 +67,9 @@ void Optimizer::RunOptimizer(OptimizerType type, const std::function<void()> &ca
 	}
 	auto &profiler = QueryProfiler::Get(context);
 	profiler.StartPhase(OptimizerTypeToString(type));
+	Recorder::LogStepStart(OptimizerTypeToString(type), "rule", *plan);
 	callback();
+	Recorder::LogStepEnd(OptimizerTypeToString(type), "rule", *plan);
 	profiler.EndPhase();
 	if (plan) {
 		Verify(*plan);

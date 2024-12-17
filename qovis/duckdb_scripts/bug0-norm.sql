@@ -1,0 +1,1 @@
+SELECT col1 FROM tbl ORDER BY col2 LIMIT 100

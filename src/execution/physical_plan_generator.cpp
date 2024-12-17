@@ -10,6 +10,8 @@
 #include "duckdb/planner/operator/logical_extension_operator.hpp"
 #include "duckdb/planner/operator/list.hpp"
 
+#include "duckdb/recorder/recorder.hpp"
+
 namespace duckdb {
 
 class DependencyExtractor : public LogicalOperatorVisitor {
@@ -41,22 +43,30 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(unique_ptr<Logica
 
 	// first resolve column references
 	profiler.StartPhase("column_binding");
+	Recorder::LogStepStart("ColumnBinding", "rule", *op);
 	ColumnBindingResolver resolver;
 	resolver.VisitOperator(*op);
+	Recorder::LogStepEnd("ColumnBinding", "rule", *op);
 	profiler.EndPhase();
 
 	// now resolve types of all the operators
 	profiler.StartPhase("resolve_types");
+	Recorder::LogStepStart("ResolveTypes", "rule", *op);
 	op->ResolveOperatorTypes();
+	Recorder::LogStepEnd("ResolveTypes", "rule", *op);
 	profiler.EndPhase();
 
 	// extract dependencies from the logical plan
+	Recorder::LogStepStart("DependencyExtraction", "rule", *op);
 	DependencyExtractor extractor(dependencies);
 	extractor.VisitOperator(*op);
+	Recorder::LogStepEnd("DependencyExtraction", "rule", *op);
 
 	// then create the main physical plan
 	profiler.StartPhase("create_plan");
+	Recorder::LogStepStart("CreatePlan", "rule", *op);
 	auto plan = CreatePlan(*op);
+	Recorder::LogStepEnd("CreatePlan", "rule", *plan);
 	profiler.EndPhase();
 
 	plan->Verify();

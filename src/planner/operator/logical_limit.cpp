@@ -12,6 +12,15 @@ vector<ColumnBinding> LogicalLimit::GetColumnBindings() {
 	return children[0]->GetColumnBindings();
 }
 
+string LogicalLimit::ParamsToString() const {
+	string result;
+	result += "LIMIT: " + to_string(limit_val) + "\n";
+	if (offset_val > 0) {
+		result += "OFFSET: " + to_string(offset_val) + "\n";
+	}
+	return result;
+}
+
 idx_t LogicalLimit::EstimateCardinality(ClientContext &context) {
 	auto child_cardinality = children[0]->EstimateCardinality(context);
 	if (limit_val >= 0 && idx_t(limit_val) < child_cardinality) {

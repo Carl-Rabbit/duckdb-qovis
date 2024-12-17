@@ -116,6 +116,15 @@ SinkResultType PhysicalLimit::Sink(ExecutionContext &context, DataChunk &chunk, 
 	return SinkResultType::NEED_MORE_INPUT;
 }
 
+string PhysicalLimit::ParamsToString() const {
+	string result;
+	result += "LIMIT: " + to_string(limit_value) + "\n";
+	if (offset_value > 0) {
+		result += "OFFSET: " + to_string(offset_value) + "\n";
+	}
+	return result;
+}
+
 SinkCombineResultType PhysicalLimit::Combine(ExecutionContext &context, OperatorSinkCombineInput &input) const {
 	auto &gstate = input.global_state.Cast<LimitGlobalState>();
 	auto &state = input.local_state.Cast<LimitLocalState>();

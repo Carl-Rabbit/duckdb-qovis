@@ -39,6 +39,8 @@ public:
 
 	idx_t EstimateCardinality(ClientContext &context) override;
 
+	string ParamsToString() const override;
+
 protected:
 	void ResolveTypes() override {
 		types = children[0]->types;

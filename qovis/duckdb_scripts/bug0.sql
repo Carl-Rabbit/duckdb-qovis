@@ -1,0 +1,1 @@
+WITH cte AS (SELECT * FROM tbl ORDER BY col2) SELECT col1 FROM cte LIMIT 100
